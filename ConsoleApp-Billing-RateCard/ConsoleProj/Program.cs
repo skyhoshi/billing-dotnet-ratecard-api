@@ -14,8 +14,6 @@ using System.Configuration; //BL
 
 namespace ARMAPI_Test
 {
-#error Please update the appSettings section in app.config, then remove this statement
-
     class Program
     {
         //This is a sample console application that shows you how to grab a User token from AAD for the current user of the app
@@ -40,7 +38,7 @@ namespace ARMAPI_Test
                        "subscriptions",
                        ConfigurationManager.AppSettings["SubscriptionID"],
                        "providers/Microsoft.Commerce/RateCard?api-version=2016-08-31-preview&$filter=OfferDurableId eq 'MS-AZR-0121p' and Currency eq 'USD' and Locale eq 'en-US' and RegionInfo eq 'US'");
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestURL);
+            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(requestURL);
 
             // Add the OAuth Authorization header, and Content Type header
             request.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + token);
@@ -51,7 +49,7 @@ namespace ARMAPI_Test
             {
                 // Call the REST endpoint
                 Console.WriteLine("Calling RateCard service...");
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                HttpWebResponse response = (HttpWebResponse) request.GetResponse();
                 Console.WriteLine(String.Format("RateCard service response status: {0}", response.StatusDescription));
                 Stream receiveStream = response.GetResponseStream();
 
@@ -73,7 +71,7 @@ namespace ARMAPI_Test
                 Console.WriteLine("JSON output complete.  Press ENTER to close.");
                 Console.ReadLine();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(String.Format("{0} \n\n{1}", e.Message, e.InnerException != null ? e.InnerException.Message : ""));
                 Console.ReadLine();
@@ -83,15 +81,20 @@ namespace ARMAPI_Test
 
         public static string GetOAuthTokenFromAAD()
         {
-            var authenticationContext = new AuthenticationContext(  String.Format("{0}/{1}",
+            var authenticationContext = new AuthenticationContext(String.Format("{0}/{1}",
                                                                     ConfigurationManager.AppSettings["ADALServiceURL"],
                                                                     ConfigurationManager.AppSettings["TenantDomain"]));
 
             //Ask the logged in user to authenticate, so that this client app can get a token on his behalf
-            var result = authenticationContext.AcquireToken(String.Format("{0}/",ConfigurationManager.AppSettings["ARMBillingServiceURL"]),
-                                                            ConfigurationManager.AppSettings["ClientID"],
-                                                            new Uri(ConfigurationManager.AppSettings["ADALRedirectURL"]),
-                                                            PromptBehavior.Always);
+            //var result = authenticationContext.AcquireToken(String.Format("{0}/",ConfigurationManager.AppSettings["ARMBillingServiceURL"]),
+            //                                                ConfigurationManager.AppSettings["ClientID"],
+            //                                                new Uri(ConfigurationManager.AppSettings["ADALRedirectURL"]),
+            //                                                PromptBehavior.Always);
+
+            var result = authenticationContext.AcquireTokenAsync(String.Format("{0}/", ConfigurationManager.AppSettings["ARMBillingServiceURL"]),
+                                                ConfigurationManager.AppSettings["ClientID"], 
+                                                new Uri(ConfigurationManager.AppSettings["ADALRedirectURL"]), 
+                                                new PlatformParameters(PromptBehavior.Always)).Result;
 
             if (result == null)
             {
